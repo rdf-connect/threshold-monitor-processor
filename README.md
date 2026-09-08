@@ -1,18 +1,26 @@
 # Threshold Monitor Processor
 
-An [RDF-Connect](https://github.com/rdf-connect) processor that watches a numeric
-value on incoming [SDS](https://w3id.org/sds#) members and emits an `oslc:Error`
-report whenever that value falls outside a configured `[min, max]` range.
+[RDF-Connect](https://github.com/rdf-connect) processors that watch a numeric
+value on incoming RDF messages and emit an `oslc:Error` report whenever that
+value falls outside a configured `[min, max]` range.
 
-For each SDS record read from its `reader`, the processor:
+Two flavours are shipped, differing only in how the entities to monitor are
+found in an incoming message:
 
-1. Looks up the member described by the record's `sds:payload`.
-2. Extracts a value from that member using a configured SHACL path.
-3. If the value is a number and violates the configured `min`/`max` bound, writes
-   a small `oslc:Error` graph to its `writer`, ready to be inserted into an error
-   graph (e.g. by a [mu-semtech](https://mu.semte.ch/) error-reporting service).
+| Processor                | Input                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `tm:ThresholdMonitorJs`    | Plain RDF. Every entity typed with the configured `tm:type` is monitored.                  |
+| `tm:ThresholdMonitorSDSJs` | [SDS](https://w3id.org/sds#) records. The member of each record's `sds:payload` is monitored, optionally restricted to one `sds:stream`. |
 
-Messages that don't violate any bound produce no output — the processor is a
+For each measurement found in a message, both processors:
+
+1. Extract a value from that entity using a configured SHACL path.
+2. If the value is a number and violates the configured `min`/`max` bound, write
+   a small `oslc:Error` graph to their `writer`, ready to be inserted into an
+   error graph (e.g. by a [mu-semtech](https://mu.semte.ch/) error-reporting
+   service).
+
+Messages that don't violate any bound produce no output — the processors are a
 filter/enricher, not a pass-through.
 
 ## Installation
@@ -23,29 +31,34 @@ npm install @rdfc/threshold-monitor-processor-ts
 
 Then import `processor.ttl` from this package into your pipeline (see
 [Configuring the processor](#configuring-the-processor) below) and reference
-`tm:ThresholdMonitorJs` as a processor instance.
+`tm:ThresholdMonitorJs` or `tm:ThresholdMonitorSDSJs` as a processor instance.
 
 ## Configuring the processor
 
-The processor is described by the `tm:ThresholdMonitorJs` shape in
-[`processor.ttl`](./processor.ttl), under the namespace
-`https://w3id.org/rdf-connect/threshold-monitor#` (prefix `tm:`). An instance takes
-the following parameters:
+Both processors are described in [`processor.ttl`](./processor.ttl), under the
+namespace `https://w3id.org/rdf-connect/threshold-monitor#` (prefix `tm:`). An
+instance takes the following parameters:
 
 | Parameter    | Predicate    | Required          | Type             | Description                                                                                                     |
 | ------------ | ------------ | ------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `reader`     | `rdfc:reader`  | yes                | `rdfc:Reader`      | Channel to read incoming SDS messages (N-Quads strings) from.                                                    |
+| `reader`     | `rdfc:reader`  | yes                | `rdfc:Reader`      | Channel to read incoming messages (N-Quads strings) from.                                                        |
 | `writer`     | `rdfc:writer`  | yes                | `rdfc:Writer`      | Channel to write generated alert messages to.                                                                    |
-| `path`       | `tm:path`      | yes                | SHACL property path | Path, relative to the SDS member's IRI, used to extract the value to monitor. Any SHACL path expression rdf-lens supports works (single predicate, sequence, inverse, etc). |
+| `path`       | `tm:path`      | yes                | SHACL property path | Path, relative to the monitored entity's IRI, used to extract the value to monitor. Any SHACL path expression rdf-lens supports works (single predicate, sequence, inverse, etc). |
 | `min`        | `tm:min`       | no<sup>†</sup>       | `xsd:double`      | Lower bound. Values strictly below `min` trigger an alert.                                                       |
 | `max`        | `tm:max`       | no<sup>†</sup>       | `xsd:double`      | Upper bound. Values strictly above `max` trigger an alert.                                                       |
-| `streamId`   | `tm:stream`    | no                 | IRI               | Restrict monitoring to records whose `sds:stream` equals this IRI. If omitted, every incoming record is checked. |
 | `label`      | `rdfs:label`   | no                 | `xsd:string`      | Human-readable name used in log output and in the generated error's message/detail. |
 | `creator`    | `tm:creator`   | yes                | IRI               | Agent the generated error is attributed to (`dct:creator`).                                                      |
 
 † At least one of `min` or `max` must be set — `init()` throws if both are
 omitted. Setting only one leaves the other side of the range unchecked (e.g.
 configuring only `max` never flags values that are too low).
+
+On top of those, each processor takes one parameter of its own:
+
+| Processor                | Parameter  | Predicate   | Required | Type | Description                                                                                                     |
+| ------------------------ | ---------- | ----------- | -------- | ---- | --------------------------------------------------------------------------------------------------------------- |
+| `tm:ThresholdMonitorJs`    | `type`     | `tm:type`   | yes      | IRI  | Only entities with this `rdf:type` are monitored. Every matching entity in a message is checked.                 |
+| `tm:ThresholdMonitorSDSJs` | `streamId` | `tm:stream` | no       | IRI  | Restrict monitoring to records whose `sds:stream` equals this IRI. If omitted, every incoming record is checked. |
 
 ### Example pipeline
 
@@ -58,13 +71,24 @@ configuring only `max` never flags values that are too low).
 
 <> a rdfc:Pipeline;
     rdfc:consistsOf [
-        rdfc:processor <#TemperatureMonitor>;
+        rdfc:processor <#TemperatureMonitor>, <#SDSTemperatureMonitor>;
     ].
 
+<data-in> a rdfc:Channel.
 <sds-in>  a rdfc:Channel.
 <alerts-out> a rdfc:Channel.
 
 <#TemperatureMonitor> a tm:ThresholdMonitorJs;
+    rdfc:reader <data-in>;
+    rdfc:writer <alerts-out>;
+    tm:type ex:Measurement;
+    tm:path ex:temperature;
+    tm:min "10.0"^^xsd:double;
+    tm:max "30.0"^^xsd:double;
+    tm:creator <http://example.org/agents#threshold-monitor>;
+    rdfs:label "temperature sensor".
+
+<#SDSTemperatureMonitor> a tm:ThresholdMonitorSDSJs;
     rdfc:reader <sds-in>;
     rdfc:writer <alerts-out>;
     tm:path ex:temperature;
@@ -75,9 +99,10 @@ configuring only `max` never flags values that are too low).
     rdfs:label "temperature sensor".
 ```
 
+`data-in` carries plain RDF messages describing `ex:Measurement` entities, while
 `sds-in` is expected to carry SDS records (typically produced by an
-`sds-processors` `sdsify`/`bucketize` step or similar), and `alerts-out` can be
-fed into any downstream processor (e.g. a SPARQL-inserting sink) to act on the
+`sds-processors` `sdsify`/`bucketize` step or similar). `alerts-out` can be fed
+into any downstream processor (e.g. a SPARQL-inserting sink) to act on the
 generated `oslc:Error` reports.
 
 ## Alert output
@@ -94,8 +119,8 @@ defined in [`processor.ttl`](./processor.ttl), with:
 | `oslc:message`         | a generated short description of the violation                            |
 | `dct:created`          | an `xsd:dateTime` timestamp of when the violation was observed             |
 | `dct:creator`          | the configured `creator` IRI                                                |
-| `oslc:largePreview`    | a generated detail describing the member, value, and violated bound        |
-| `dct:references`       | IRI of the SDS member that violated the bound                              |
+| `oslc:largePreview`    | a generated detail describing the entity, value, and violated bound        |
+| `dct:references`       | IRI of the entity that violated the bound                                  |
 
 This shape is designed to be insertable directly into an error graph, e.g.:
 

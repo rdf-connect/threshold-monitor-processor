@@ -1,7 +1,7 @@
 {
   "name": "@rdfc/threshold-monitor-processor-ts",
-  "version": "0.0.1-alpha.2",
-  "description": "RDF-Connect processor that monitors a float value at a configured SHACL path on incoming SDS members and emits an alert when it goes outside configured bounds.",
+  "version": "0.0.1",
+  "description": "RDF-Connect processors that monitor a float value at a configured SHACL path on incoming entities (plain RDF or SDS members) and emit an alert when it goes outside configured bounds.",
   "type": "module",
   "main": "lib/index.js",
   "files": [

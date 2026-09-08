@@ -8,21 +8,64 @@ const { namedNode } = DataFactory;
 
 const RDFC_READER = "https://w3id.org/rdf-connect#Reader";
 const RDFC_WRITER = "https://w3id.org/rdf-connect#Writer";
-const TARGET_CLASS = "https://w3id.org/rdf-connect/threshold-monitor#ThresholdMonitorJs";
+const TM = "https://w3id.org/rdf-connect/threshold-monitor#";
 
-describe("tm:ThresholdMonitorJs processor definition", () => {
-    test("the SHACL shape extracts a working path lens and typed bounds", () => {
-        const shapeQuads = new Parser().parse(
-            readFileSync(process.cwd() + "/processor.ttl", "utf-8"),
-        );
-
-        const instance = `
-        @prefix tm: <https://w3id.org/rdf-connect/threshold-monitor#>.
+const PREFIXES = `
+        @prefix tm: <${TM}>.
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
         @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
         @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+        `;
 
-        <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
+type MonitorArgs = {
+    path: BasicLensM<Cont, Cont>;
+    min: number;
+    max: number;
+    creator: { value: string };
+};
+
+/** Extract the processor arguments of `<http://example.com/ns#monitor>`. */
+function extractArgs<T>(instance: string, targetClass: string): T {
+    const shapeQuads = new Parser().parse(readFileSync(process.cwd() + "/processor.ttl", "utf-8"));
+    const instanceQuads = new Parser({ baseIRI: "" }).parse(PREFIXES + instance);
+    const quads = [...shapeQuads, ...instanceQuads];
+
+    const shapes = extractShapes(
+        quads,
+        {},
+        {
+            [RDFC_READER]: empty<Cont>(),
+            [RDFC_WRITER]: empty<Cont>(),
+        },
+    );
+
+    const lens = shapes.lenses[targetClass];
+    expect(lens).toBeDefined();
+
+    return <T>lens.execute({
+        id: namedNode("http://example.com/ns#monitor"),
+        quads,
+    });
+}
+
+/** The path lens is only useful if it actually resolves values on data. */
+function expectWorkingPathLens(path: BasicLensM<Cont, Cont>) {
+    const dataQuads = new Parser().parse(
+        `<http://example.org/ns#member1> <http://example.org/ns#temperature> "42.5"^^<http://www.w3.org/2001/XMLSchema#double>.`,
+    );
+    const found = path.execute({
+        id: namedNode("http://example.org/ns#member1"),
+        quads: dataQuads,
+    });
+
+    expect(found.map((x) => x.id.value)).toEqual(["42.5"]);
+}
+
+describe("tm:ThresholdMonitorSDSJs processor definition", () => {
+    test("the SHACL shape extracts a working path lens, typed bounds and the stream", () => {
+        const args = extractArgs<MonitorArgs & { streamId: { value: string } }>(
+            `
+        <http://example.com/ns#monitor> a tm:ThresholdMonitorSDSJs;
           rdfc:reader <jr>;
           rdfc:writer <jw>;
           tm:path <http://example.org/ns#temperature>;
@@ -31,45 +74,41 @@ describe("tm:ThresholdMonitorJs processor definition", () => {
           tm:stream <http://example.org/ns#stream1>;
           tm:creator <http://example.org/agents#threshold-monitor>;
           rdfs:label "temperature sensor".
-        `;
-        const instanceQuads = new Parser({ baseIRI: "" }).parse(instance);
-        const quads = [...shapeQuads, ...instanceQuads];
-
-        const shapes = extractShapes(
-            quads,
-            {},
-            {
-                [RDFC_READER]: empty<Cont>(),
-                [RDFC_WRITER]: empty<Cont>(),
-            },
+        `,
+            TM + "ThresholdMonitorSDSJs",
         );
-
-        const lens = shapes.lenses[TARGET_CLASS];
-        expect(lens).toBeDefined();
-
-        const args = <{
-            path: BasicLensM<Cont, Cont>;
-            min: number;
-            max: number;
-            streamId: unknown;
-            creator: { value: string };
-        }>lens.execute({
-            id: namedNode("http://example.com/ns#monitor"),
-            quads,
-        });
 
         expect(args.min).toBe(10);
         expect(args.max).toBe(30);
         expect(args.creator.value).toBe("http://example.org/agents#threshold-monitor");
+        expect(args.streamId.value).toBe("http://example.org/ns#stream1");
 
-        const dataQuads = new Parser().parse(
-            `<http://example.org/ns#member1> <http://example.org/ns#temperature> "42.5"^^<http://www.w3.org/2001/XMLSchema#double>.`,
+        expectWorkingPathLens(args.path);
+    });
+});
+
+describe("tm:ThresholdMonitorJs processor definition", () => {
+    test("the SHACL shape extracts a working path lens, typed bounds and the monitored type", () => {
+        const args = extractArgs<MonitorArgs & { type: { value: string } }>(
+            `
+        <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
+          rdfc:reader <jr>;
+          rdfc:writer <jw>;
+          tm:path <http://example.org/ns#temperature>;
+          tm:type <http://example.org/ns#Measurement>;
+          tm:min "10.0"^^xsd:double;
+          tm:max "30.0"^^xsd:double;
+          tm:creator <http://example.org/agents#threshold-monitor>;
+          rdfs:label "temperature sensor".
+        `,
+            TM + "ThresholdMonitorJs",
         );
-        const found = args.path.execute({
-            id: namedNode("http://example.org/ns#member1"),
-            quads: dataQuads,
-        });
 
-        expect(found.map((x) => x.id.value)).toEqual(["42.5"]);
+        expect(args.min).toBe(10);
+        expect(args.max).toBe(30);
+        expect(args.creator.value).toBe("http://example.org/agents#threshold-monitor");
+        expect(args.type.value).toBe("http://example.org/ns#Measurement");
+
+        expectWorkingPathLens(args.path);
     });
 });

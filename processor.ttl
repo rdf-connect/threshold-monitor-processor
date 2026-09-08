@@ -9,57 +9,85 @@
 @prefix mu: <http://mu.semte.ch/vocabularies/core/>.
 @prefix ex: <http://lblod.data.gift/shapes/>.
 
+# Property shapes shared by both monitors: everything except how the entities to
+# monitor are found in an incoming message.
+tm:ReaderShape a sh:PropertyShape;
+    sh:class rdfc:Reader;
+    sh:path rdfc:reader;
+    sh:name "reader";
+    sh:minCount 1;
+    sh:maxCount 1.
+
+tm:WriterShape a sh:PropertyShape;
+    sh:class rdfc:Writer;
+    sh:path rdfc:writer;
+    sh:name "writer";
+    sh:minCount 1;
+    sh:maxCount 1.
+
+tm:PathShape a sh:PropertyShape;
+    sh:class rdfl:PathLens;
+    sh:path tm:path;
+    sh:name "path";
+    sh:minCount 1;
+    sh:maxCount 1.
+
+tm:MinShape a sh:PropertyShape;
+    sh:datatype xsd:double;
+    sh:path tm:min;
+    sh:name "min";
+    sh:maxCount 1.
+
+tm:MaxShape a sh:PropertyShape;
+    sh:datatype xsd:double;
+    sh:path tm:max;
+    sh:name "max";
+    sh:maxCount 1.
+
+tm:LabelShape a sh:PropertyShape;
+    sh:datatype xsd:string;
+    sh:path rdfs:label;
+    sh:name "label";
+    sh:maxCount 1.
+
+tm:CreatorShape a sh:PropertyShape;
+    sh:datatype xsd:iri;
+    sh:path tm:creator;
+    sh:name "creator";
+    sh:minCount 1;
+    sh:maxCount 1.
+
+tm:ThresholdMonitorSDSJs rdfc:jsImplementationOf rdfc:Processor;
+    rdfs:label "JS/TS SDS Threshold Monitor Processor";
+    rdfs:comment "Reads a stream of SDS members, extracts a value at a configured SHACL path, and writes an oslc:Error alert whenever that value falls outside the configured min/max bounds.";
+    rdfc:file <./lib/index.js>;
+    rdfc:class "ThresholdMonitorSDS";
+    rdfc:entrypoint <./>.
+
+[] a sh:NodeShape;
+    sh:targetClass tm:ThresholdMonitorSDSJs;
+    sh:property tm:ReaderShape, tm:WriterShape, tm:PathShape, tm:MinShape, tm:MaxShape,
+        tm:LabelShape, tm:CreatorShape, [
+        sh:datatype xsd:iri;
+        sh:path tm:stream;
+        sh:name "streamId";
+        sh:maxCount 1;
+    ].
+
 tm:ThresholdMonitorJs rdfc:jsImplementationOf rdfc:Processor;
     rdfs:label "JS/TS Threshold Monitor Processor";
-    rdfs:comment "Reads a stream of SDS members, extracts a value at a configured SHACL path, and writes a tm:ThresholdViolation alert whenever that value falls outside the configured min/max bounds.";
+    rdfs:comment "Reads plain RDF messages, monitors every entity typed with the configured tm:type, extracts a value at a configured SHACL path, and writes an oslc:Error alert whenever that value falls outside the configured min/max bounds.";
     rdfc:file <./lib/index.js>;
     rdfc:class "ThresholdMonitor";
     rdfc:entrypoint <./>.
 
 [] a sh:NodeShape;
     sh:targetClass tm:ThresholdMonitorJs;
-    sh:property [
-        sh:class rdfc:Reader;
-        sh:path rdfc:reader;
-        sh:name "reader";
-        sh:minCount 1;
-        sh:maxCount 1;
-    ], [
-        sh:class rdfc:Writer;
-        sh:path rdfc:writer;
-        sh:name "writer";
-        sh:minCount 1;
-        sh:maxCount 1;
-    ], [
-        sh:class rdfl:PathLens;
-        sh:path tm:path;
-        sh:name "path";
-        sh:minCount 1;
-        sh:maxCount 1;
-    ], [
-        sh:datatype xsd:double;
-        sh:path tm:min;
-        sh:name "min";
-        sh:maxCount 1;
-    ], [
-        sh:datatype xsd:double;
-        sh:path tm:max;
-        sh:name "max";
-        sh:maxCount 1;
-    ], [
+    sh:property tm:ReaderShape, tm:WriterShape, tm:PathShape, tm:MinShape, tm:MaxShape,
+        tm:LabelShape, tm:CreatorShape, [
         sh:datatype xsd:iri;
-        sh:path tm:stream;
-        sh:name "streamId";
-        sh:maxCount 1;
-    ], [
-        sh:datatype xsd:string;
-        sh:path rdfs:label;
-        sh:name "label";
-        sh:maxCount 1;
-    ], [
-        sh:datatype xsd:iri;
-        sh:path tm:creator;
-        sh:name "creator";
+        sh:path tm:type;
+        sh:name "type";
         sh:minCount 1;
         sh:maxCount 1;
     ].
