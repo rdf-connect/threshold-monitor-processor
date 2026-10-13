@@ -100,6 +100,7 @@ describe("ThresholdMonitorSDS", () => {
                 min: 10,
                 max: 30,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -161,6 +162,7 @@ describe("ThresholdMonitorSDS", () => {
                 max: 30,
                 streamId: STREAM,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -184,6 +186,7 @@ describe("ThresholdMonitorSDS", () => {
                 writer: outputWriter,
                 path: pred(TEMP),
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -206,6 +209,7 @@ describe("ThresholdMonitor", () => {
                 min: 10,
                 max: 30,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -234,6 +238,7 @@ describe("ThresholdMonitor", () => {
                 type: MEASUREMENT,
                 max: 30,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -264,6 +269,7 @@ describe("ThresholdMonitor", () => {
                 type: MEASUREMENT,
                 max: 30,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -287,6 +293,7 @@ describe("ThresholdMonitor", () => {
                 type: MEASUREMENT,
                 max: 30,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -313,6 +320,7 @@ describe("ThresholdMonitor", () => {
                 type: MEASUREMENT,
                 max: 30,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );
@@ -337,6 +345,7 @@ describe("ThresholdMonitor", () => {
                 path: pred(TEMP),
                 type: MEASUREMENT,
                 creator: CREATOR,
+                label: "monitored value",
             },
             logger,
         );

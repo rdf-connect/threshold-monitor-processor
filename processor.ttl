@@ -48,6 +48,7 @@ tm:LabelShape a sh:PropertyShape;
     sh:datatype xsd:string;
     sh:path rdfs:label;
     sh:name "label";
+    sh:defaultValue "monitored value";
     sh:maxCount 1.
 
 tm:CreatorShape a sh:PropertyShape;
