@@ -52,7 +52,7 @@ tm:LabelShape a sh:PropertyShape;
     sh:maxCount 1.
 
 tm:CreatorShape a sh:PropertyShape;
-    sh:datatype xsd:iri;
+    sh:nodeKind sh:IRI;
     sh:path tm:creator;
     sh:name "creator";
     sh:minCount 1;
@@ -69,7 +69,7 @@ tm:ThresholdMonitorSDSJs rdfc:jsImplementationOf rdfc:Processor;
     sh:targetClass tm:ThresholdMonitorSDSJs;
     sh:property tm:ReaderShape, tm:WriterShape, tm:PathShape, tm:MinShape, tm:MaxShape,
         tm:LabelShape, tm:CreatorShape, [
-        sh:datatype xsd:iri;
+        sh:nodeKind sh:IRI;
         sh:path tm:stream;
         sh:name "streamId";
         sh:maxCount 1;
@@ -86,7 +86,7 @@ tm:ThresholdMonitorJs rdfc:jsImplementationOf rdfc:Processor;
     sh:targetClass tm:ThresholdMonitorJs;
     sh:property tm:ReaderShape, tm:WriterShape, tm:PathShape, tm:MinShape, tm:MaxShape,
         tm:LabelShape, tm:CreatorShape, [
-        sh:datatype xsd:iri;
+        sh:nodeKind sh:IRI;
         sh:path tm:type;
         sh:name "type";
         sh:minCount 1;

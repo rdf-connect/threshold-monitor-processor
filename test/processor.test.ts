@@ -1,8 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "fs";
 import { Parser, DataFactory } from "n3";
-import { extractShapes, empty } from "rdf-lens";
+import { resolve } from "path";
+import { checkShapes, extractShapes, empty } from "rdf-lens";
+import { ProcHelper } from "@rdfc/js-runner/lib/testUtils";
 import type { BasicLensM, Cont } from "rdf-lens";
+import type { FullProc } from "@rdfc/js-runner";
+import type { ThresholdMonitor, ThresholdMonitorSDS } from "../src/index.js";
 
 const { namedNode } = DataFactory;
 
@@ -164,5 +168,59 @@ describe("processor defaults", () => {
         );
 
         expect(args.label).toBe("temperature sensor");
+    });
+});
+
+describe("IRI arguments", () => {
+    const instances = `
+        @prefix tm: <${TM}>.
+        @prefix rdfc: <https://w3id.org/rdf-connect#>.
+
+        <http://example.com/ns#sds> a tm:ThresholdMonitorSDSJs;
+          rdfc:reader <jr>;
+          rdfc:writer <jw>;
+          tm:path <http://example.org/ns#temperature>;
+          tm:stream <http://example.org/ns#stream1>;
+          tm:creator <http://example.org/agents#threshold-monitor>.
+
+        <http://example.com/ns#entity> a tm:ThresholdMonitorJs;
+          rdfc:reader <jr>;
+          rdfc:writer <jw>;
+          tm:path <http://example.org/ns#temperature>;
+          tm:type <http://example.org/ns#Measurement>;
+          tm:creator <http://example.org/agents#threshold-monitor>.
+        `;
+
+    test("the shapes and IRI-valued instances check without findings", () => {
+        const quads = [
+            ...new Parser().parse(readFileSync(process.cwd() + "/processor.ttl", "utf-8")),
+            ...new Parser({ baseIRI: "" }).parse(instances),
+        ];
+
+        expect(checkShapes(quads).findings).toEqual([]);
+    });
+
+    test("the processors receive the IRIs as terms", async () => {
+        const helper = new ProcHelper<ThresholdMonitorSDS | ThresholdMonitor>();
+        await helper.importFile(resolve("./processor.ttl"));
+        await helper.importInline(resolve("./pipeline.ttl"), instances);
+
+        helper.getConfig(namedNode(TM + "ThresholdMonitorSDSJs"));
+        const sds = <FullProc<ThresholdMonitorSDS>>(
+            await helper.getProcessor("http://example.com/ns#sds")
+        );
+        expect(sds.creator.termType).toBe("NamedNode");
+        expect(sds.creator.value).toBe("http://example.org/agents#threshold-monitor");
+        expect(sds.streamId?.termType).toBe("NamedNode");
+        expect(sds.streamId?.value).toBe("http://example.org/ns#stream1");
+
+        helper.getConfig(namedNode(TM + "ThresholdMonitorJs"));
+        const entity = <FullProc<ThresholdMonitor>>(
+            await helper.getProcessor("http://example.com/ns#entity")
+        );
+        expect(entity.creator.termType).toBe("NamedNode");
+        expect(entity.creator.value).toBe("http://example.org/agents#threshold-monitor");
+        expect(entity.type.termType).toBe("NamedNode");
+        expect(entity.type.value).toBe("http://example.org/ns#Measurement");
     });
 });
