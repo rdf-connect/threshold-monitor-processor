@@ -112,3 +112,57 @@ describe("tm:ThresholdMonitorJs processor definition", () => {
         expectWorkingPathLens(args.path);
     });
 });
+
+describe("processor defaults", () => {
+    test("tm:ThresholdMonitorSDSJs falls back to its default label", () => {
+        const args = extractArgs<{ label: string; min?: number; streamId?: unknown }>(
+            `
+        <http://example.com/ns#monitor> a tm:ThresholdMonitorSDSJs;
+          rdfc:reader <jr>;
+          rdfc:writer <jw>;
+          tm:path <http://example.org/ns#temperature>;
+          tm:creator <http://example.org/agents#threshold-monitor>.
+        `,
+            TM + "ThresholdMonitorSDSJs",
+        );
+
+        expect(args.label).toBe("monitored value");
+        expect(args.min).toBeUndefined();
+        expect(args.streamId).toBeUndefined();
+    });
+
+    test("tm:ThresholdMonitorJs falls back to its default label", () => {
+        const args = extractArgs<{ label: string; max?: number }>(
+            `
+        <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
+          rdfc:reader <jr>;
+          rdfc:writer <jw>;
+          tm:path <http://example.org/ns#temperature>;
+          tm:type <http://example.org/ns#Measurement>;
+          tm:creator <http://example.org/agents#threshold-monitor>.
+        `,
+            TM + "ThresholdMonitorJs",
+        );
+
+        expect(args.label).toBe("monitored value");
+        expect(args.max).toBeUndefined();
+    });
+
+    test("an explicit label overrides the default", () => {
+        const args = extractArgs<{ label: string }>(
+            `
+        <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
+          rdfc:reader <jr>;
+          rdfc:writer <jw>;
+          tm:path <http://example.org/ns#temperature>;
+          tm:type <http://example.org/ns#Measurement>;
+          tm:min "10.0"^^xsd:double;
+          tm:creator <http://example.org/agents#threshold-monitor>;
+          rdfs:label "temperature sensor".
+        `,
+            TM + "ThresholdMonitorJs",
+        );
+
+        expect(args.label).toBe("temperature sensor");
+    });
+});

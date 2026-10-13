@@ -37,7 +37,7 @@ export type ThresholdMonitorArgs = {
     path: BasicLensM<Cont, Cont>;
     min?: number;
     max?: number;
-    label?: string;
+    label: string;
     creator: Term;
 };
 
@@ -68,7 +68,7 @@ export abstract class ThresholdMonitorBase<
             .join(" and ");
 
         this.logger.info(
-            `${this.constructor.name} watching${this.label ? ` '${this.label}'` : ""}, expecting values ${bounds}`,
+            `${this.constructor.name} watching '${this.label}', expecting values ${bounds}`,
         );
     }
 
@@ -140,7 +140,7 @@ export abstract class ThresholdMonitorBase<
         boundValue: number,
     ): Quad[] {
         const id = blankNode();
-        const label = this.label ?? "monitored value";
+        const label = this.label;
         const violation =
             bound === "min"
                 ? `below the minimum of ${boundValue}`

@@ -46,7 +46,7 @@ instance takes the following parameters:
 | `path`       | `tm:path`      | yes                | SHACL property path | Path, relative to the monitored entity's IRI, used to extract the value to monitor. Any SHACL path expression rdf-lens supports works (single predicate, sequence, inverse, etc). |
 | `min`        | `tm:min`       | no<sup>†</sup>       | `xsd:double`      | Lower bound. Values strictly below `min` trigger an alert.                                                       |
 | `max`        | `tm:max`       | no<sup>†</sup>       | `xsd:double`      | Upper bound. Values strictly above `max` trigger an alert.                                                       |
-| `label`      | `rdfs:label`   | no                 | `xsd:string`      | Human-readable name used in log output and in the generated error's message/detail. |
+| `label`      | `rdfs:label`   | no                 | `xsd:string`      | Human-readable name used in log output and in the generated error's message/detail. Defaults to `"monitored value"`. |
 | `creator`    | `tm:creator`   | yes                | IRI               | Agent the generated error is attributed to (`dct:creator`).                                                      |
 
 † At least one of `min` or `max` must be set — `init()` throws if both are
