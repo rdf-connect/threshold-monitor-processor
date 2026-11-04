@@ -41,8 +41,8 @@ instance takes the following parameters:
 
 | Parameter    | Predicate    | Required          | Type             | Description                                                                                                     |
 | ------------ | ------------ | ------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `reader`     | `rdfc:reader`  | yes                | `rdfc:Reader`      | Channel to read incoming messages (N-Quads strings) from.                                                        |
-| `writer`     | `rdfc:writer`  | yes                | `rdfc:Writer`      | Channel to write generated alert messages to.                                                                    |
+| `reader`     | `rdfcp:input`  | yes                | `rdfc:Reader`      | Channel to read incoming messages (N-Quads strings) from.                                                        |
+| `writer`     | `rdfcp:output` | yes                | `rdfc:Writer`      | Channel to write generated alert messages to.                                                                    |
 | `path`       | `tm:path`      | yes                | SHACL property path | Path, relative to the monitored entity's IRI, used to extract the value to monitor. Any SHACL path expression rdf-lens supports works (single predicate, sequence, inverse, etc). |
 | `min`        | `tm:min`       | no<sup>†</sup>       | `xsd:double`      | Lower bound. Values strictly below `min` trigger an alert.                                                       |
 | `max`        | `tm:max`       | no<sup>†</sup>       | `xsd:double`      | Upper bound. Values strictly above `max` trigger an alert.                                                       |
@@ -64,6 +64,7 @@ On top of those, each processor takes one parameter of its own:
 
 ```turtle
 @prefix rdfc: <https://w3id.org/rdf-connect#>.
+@prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 @prefix tm:   <https://w3id.org/rdf-connect/threshold-monitor#>.
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
@@ -79,8 +80,8 @@ On top of those, each processor takes one parameter of its own:
 <alerts-out> a rdfc:Channel.
 
 <#TemperatureMonitor> a tm:ThresholdMonitorJs;
-    rdfc:reader <data-in>;
-    rdfc:writer <alerts-out>;
+    rdfcp:input <data-in>;
+    rdfcp:output <alerts-out>;
     tm:type ex:Measurement;
     tm:path ex:temperature;
     tm:min "10.0"^^xsd:double;
@@ -89,8 +90,8 @@ On top of those, each processor takes one parameter of its own:
     rdfs:label "temperature sensor".
 
 <#SDSTemperatureMonitor> a tm:ThresholdMonitorSDSJs;
-    rdfc:reader <sds-in>;
-    rdfc:writer <alerts-out>;
+    rdfcp:input <sds-in>;
+    rdfcp:output <alerts-out>;
     tm:path ex:temperature;
     tm:min "10.0"^^xsd:double;
     tm:max "30.0"^^xsd:double;

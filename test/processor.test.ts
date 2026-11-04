@@ -17,6 +17,7 @@ const TM = "https://w3id.org/rdf-connect/threshold-monitor#";
 const PREFIXES = `
         @prefix tm: <${TM}>.
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
+        @prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
         @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
         @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
         `;
@@ -70,8 +71,8 @@ describe("tm:ThresholdMonitorSDSJs processor definition", () => {
         const args = extractArgs<MonitorArgs & { streamId: { value: string } }>(
             `
         <http://example.com/ns#monitor> a tm:ThresholdMonitorSDSJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:min "10.0"^^xsd:double;
           tm:max "30.0"^^xsd:double;
@@ -96,8 +97,8 @@ describe("tm:ThresholdMonitorJs processor definition", () => {
         const args = extractArgs<MonitorArgs & { type: { value: string } }>(
             `
         <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:type <http://example.org/ns#Measurement>;
           tm:min "10.0"^^xsd:double;
@@ -122,8 +123,8 @@ describe("processor defaults", () => {
         const args = extractArgs<{ label: string; min?: number; streamId?: unknown }>(
             `
         <http://example.com/ns#monitor> a tm:ThresholdMonitorSDSJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:creator <http://example.org/agents#threshold-monitor>.
         `,
@@ -139,8 +140,8 @@ describe("processor defaults", () => {
         const args = extractArgs<{ label: string; max?: number }>(
             `
         <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:type <http://example.org/ns#Measurement>;
           tm:creator <http://example.org/agents#threshold-monitor>.
@@ -156,8 +157,8 @@ describe("processor defaults", () => {
         const args = extractArgs<{ label: string }>(
             `
         <http://example.com/ns#monitor> a tm:ThresholdMonitorJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:type <http://example.org/ns#Measurement>;
           tm:min "10.0"^^xsd:double;
@@ -175,17 +176,18 @@ describe("IRI arguments", () => {
     const instances = `
         @prefix tm: <${TM}>.
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
+        @prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 
         <http://example.com/ns#sds> a tm:ThresholdMonitorSDSJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:stream <http://example.org/ns#stream1>;
           tm:creator <http://example.org/agents#threshold-monitor>.
 
         <http://example.com/ns#entity> a tm:ThresholdMonitorJs;
-          rdfc:reader <jr>;
-          rdfc:writer <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           tm:path <http://example.org/ns#temperature>;
           tm:type <http://example.org/ns#Measurement>;
           tm:creator <http://example.org/agents#threshold-monitor>.
