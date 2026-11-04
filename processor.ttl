@@ -1,4 +1,5 @@
 @prefix rdfc: <https://w3id.org/rdf-connect#>.
+@prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
@@ -13,7 +14,7 @@
 # monitor are found in an incoming message.
 tm:ReaderShape a sh:PropertyShape;
     sh:class rdfc:Reader;
-    sh:path rdfc:reader;
+    sh:path rdfcp:input;
     sh:codeIdentifier "reader";
     sh:name "Input channel";
     sh:description "Input channel with the RDF messages to monitor.";
@@ -22,7 +23,7 @@ tm:ReaderShape a sh:PropertyShape;
 
 tm:WriterShape a sh:PropertyShape;
     sh:class rdfc:Writer;
-    sh:path rdfc:writer;
+    sh:path rdfcp:output;
     sh:codeIdentifier "writer";
     sh:name "Output channel";
     sh:description "Output channel to which an oslc:Error report is written for every value outside the configured bounds.";
