@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@rdfc/js-runner": "^3.4.0",
+    "@rdfc/js-runner": "^3.4.2",
     "@treecg/types": "^0.4.6",
     "n3": "^2.1.1",
     "rdf-lens": "^2.1.0",
