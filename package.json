@@ -18,13 +18,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@rdfc/js-runner": "^3.4.2",
     "@treecg/types": "^0.4.6",
     "n3": "^2.1.1",
     "rdf-lens": "^2.1.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {
+    "@rdfc/js-runner": "^3.4.2",
     "@rdfjs/types": "^2.0.1",
     "@types/n3": "^1.26.1",
     "@types/node": "^22.0.0",
