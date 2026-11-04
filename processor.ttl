@@ -16,6 +16,7 @@ tm:ReaderShape a sh:PropertyShape;
     sh:path rdfc:reader;
     sh:codeIdentifier "reader";
     sh:name "Input channel";
+    sh:description "Input channel with the RDF messages to monitor.";
     sh:minCount 1;
     sh:maxCount 1.
 
@@ -24,6 +25,7 @@ tm:WriterShape a sh:PropertyShape;
     sh:path rdfc:writer;
     sh:codeIdentifier "writer";
     sh:name "Output channel";
+    sh:description "Output channel to which an oslc:Error report is written for every value outside the configured bounds.";
     sh:minCount 1;
     sh:maxCount 1.
 
@@ -32,6 +34,7 @@ tm:PathShape a sh:PropertyShape;
     sh:path tm:path;
     sh:codeIdentifier "path";
     sh:name "Value path";
+    sh:description "SHACL property path, relative to the monitored entity, that points to the value to monitor.";
     sh:minCount 1;
     sh:maxCount 1.
 
@@ -40,6 +43,7 @@ tm:MinShape a sh:PropertyShape;
     sh:path tm:min;
     sh:codeIdentifier "min";
     sh:name "Minimum";
+    sh:description "Lower bound; values below it trigger an alert. At least one of min and max must be set.";
     sh:maxCount 1.
 
 tm:MaxShape a sh:PropertyShape;
@@ -47,6 +51,7 @@ tm:MaxShape a sh:PropertyShape;
     sh:path tm:max;
     sh:codeIdentifier "max";
     sh:name "Maximum";
+    sh:description "Upper bound; values above it trigger an alert. At least one of min and max must be set.";
     sh:maxCount 1.
 
 tm:LabelShape a sh:PropertyShape;
@@ -54,6 +59,7 @@ tm:LabelShape a sh:PropertyShape;
     sh:path rdfs:label;
     sh:codeIdentifier "label";
     sh:name "Label";
+    sh:description "Human-readable name of the monitored value, used in the logs and the error reports; default is \"monitored value\".";
     sh:defaultValue "monitored value";
     sh:maxCount 1.
 
@@ -62,6 +68,7 @@ tm:CreatorShape a sh:PropertyShape;
     sh:path tm:creator;
     sh:codeIdentifier "creator";
     sh:name "Error creator";
+    sh:description "IRI of the agent the error reports are attributed to (dct:creator).";
     sh:minCount 1;
     sh:maxCount 1.
 
@@ -80,6 +87,7 @@ tm:ThresholdMonitorSDSJs rdfc:jsImplementationOf rdfc:Processor;
         sh:path tm:stream;
         sh:codeIdentifier "streamId";
         sh:name "Stream";
+        sh:description "Only monitor records whose sds:stream is this IRI; if omitted, every incoming record is monitored.";
         sh:maxCount 1;
     ].
 
@@ -98,6 +106,7 @@ tm:ThresholdMonitorJs rdfc:jsImplementationOf rdfc:Processor;
         sh:path tm:type;
         sh:codeIdentifier "type";
         sh:name "Entity type";
+        sh:description "Only entities with this rdf:type are monitored.";
         sh:minCount 1;
         sh:maxCount 1;
     ].
